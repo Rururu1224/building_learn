@@ -1,0 +1,17 @@
+# 构建产物
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+
+# JetBrains Rider
+.idea/
+*.iml
+
+# OS 文件
+.DS_Store
+Thumbs.db

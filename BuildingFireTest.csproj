@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>BuildingFireTest</RootNamespace>
+    <AssemblyName>BuildingFireTest</AssemblyName>
+    <StartupObject>BuildingFireTest.Program</StartupObject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- OxyPlot 实时温度折线图 -->
+    <PackageReference Include="OxyPlot.WindowsForms" Version="2.2.0" />
+
+    <!-- EPPlus 生成带图表的Excel报告 -->
+    <PackageReference Include="EPPlus" Version="7.6.1" />
+
+    <!-- PDFsharp-MigraDoc 生成PDF报告 -->
+    <PackageReference Include="PDFsharp-MigraDoc" Version="6.1.1" />
+
+    <!-- Microsoft.Data.Sqlite 直接操作SQLite -->
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.14" />
+
+    <!-- Microsoft.Extensions.Configuration 读取appsettings.json -->
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
+
+    <!-- Serilog 结构化日志 -->
+    <PackageReference Include="Serilog" Version="4.2.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
+
+    <!-- MathNet.Numerics 温漂线性回归 -->
+    <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>
