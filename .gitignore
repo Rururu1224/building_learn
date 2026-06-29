@@ -1,19 +1,19 @@
-# Java后端
-target/
-*.class
-*.jar
-*.war
-# 本地配置
-application-local.yml
-application-dev.yml
-.env
-# IDE缓存
-.idea/
-.vscode/
-*.iml
-# 日志
-logs/
+# 后端 C#/.NET
+obj/
+bin/
+*.cache
+*.suo
+*.user
+.vs/
 *.log
+
+# 前端 Vue/JS
+node_modules/
+dist/
+npm-debug.log
+yarn-error.log
+.vscode/
+
 # 系统文件
 .DS_Store
 Thumbs.db
