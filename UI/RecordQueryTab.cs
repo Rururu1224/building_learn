@@ -11,7 +11,7 @@ namespace BuildingFireTest.UI
 {
     /// <summary>
     /// 记录查询Tab页面
-    /// 日期范围筛选、样品编号模糊搜索、操作员下拉框、查看详情、导出
+    /// 使用 FlowLayoutPanel + Dock 布局，筛选控件自动换行不堆叠
     /// </summary>
     public partial class RecordQueryTab : UserControl
     {
@@ -42,14 +42,15 @@ namespace BuildingFireTest.UI
         private void InitializeComponent()
         {
             this.BackColor = Color.FromArgb(30, 30, 30);
+            this.Padding = new Padding(10);
 
-            // ========== 筛选面板 ==========
+            // ========== 上方：筛选面板 ==========
             var pnlFilter = new Panel
             {
-                Location = new Point(15, 15),
-                Size = new Size(1220, 80),
+                Dock = DockStyle.Top,
+                Height = 120,
                 BackColor = Color.FromArgb(40, 40, 40),
-                BorderStyle = BorderStyle.FixedSingle
+                Padding = new Padding(15, 10, 15, 10)
             };
 
             var lblFilterTitle = new Label
@@ -57,41 +58,52 @@ namespace BuildingFireTest.UI
                 Text = "筛选条件",
                 Font = new Font("Microsoft YaHei", 11F, FontStyle.Bold),
                 ForeColor = Color.White,
-                Location = new Point(15, 10),
-                AutoSize = true
+                Dock = DockStyle.Top,
+                Height = 24,
+                TextAlign = ContentAlignment.MiddleLeft
             };
 
-            // 日期范围
+            // 使用 FlowLayoutPanel 让筛选控件自动排列、换行
+            var flowFilter = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = true,
+                AutoSize = false,
+                Padding = new Padding(0, 6, 0, 0),
+                Margin = new Padding(0)
+            };
+
+            // 开始日期
             var lblStartDate = new Label
             {
                 Text = "开始日期：",
                 ForeColor = Color.FromArgb(180, 180, 180),
-                Location = new Point(15, 45),
-                AutoSize = true
+                AutoSize = true,
+                Margin = new Padding(0, 7, 4, 0)
             };
-
             dtpStartDate = new DateTimePicker
             {
                 Format = DateTimePickerFormat.Short,
-                Location = new Point(90, 42),
                 Size = new Size(110, 23),
-                Value = DateTime.Now.AddMonths(-1)
+                Value = DateTime.Now.AddMonths(-1),
+                Margin = new Padding(0, 3, 16, 0)
             };
 
+            // 结束日期
             var lblEndDate = new Label
             {
                 Text = "结束日期：",
                 ForeColor = Color.FromArgb(180, 180, 180),
-                Location = new Point(215, 45),
-                AutoSize = true
+                AutoSize = true,
+                Margin = new Padding(0, 7, 4, 0)
             };
-
             dtpEndDate = new DateTimePicker
             {
                 Format = DateTimePickerFormat.Short,
-                Location = new Point(290, 42),
                 Size = new Size(110, 23),
-                Value = DateTime.Now
+                Value = DateTime.Now,
+                Margin = new Padding(0, 3, 16, 0)
             };
 
             // 样品编号
@@ -99,18 +111,17 @@ namespace BuildingFireTest.UI
             {
                 Text = "样品编号：",
                 ForeColor = Color.FromArgb(180, 180, 180),
-                Location = new Point(420, 45),
-                AutoSize = true
+                AutoSize = true,
+                Margin = new Padding(0, 7, 4, 0)
             };
-
             txtSearchProductId = new TextBox
             {
-                Location = new Point(495, 42),
                 Size = new Size(130, 23),
                 BackColor = Color.FromArgb(60, 60, 60),
                 ForeColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle,
-                PlaceholderText = "模糊搜索"
+                PlaceholderText = "模糊搜索",
+                Margin = new Padding(0, 3, 16, 0)
             };
 
             // 操作员下拉
@@ -118,18 +129,17 @@ namespace BuildingFireTest.UI
             {
                 Text = "操作员：",
                 ForeColor = Color.FromArgb(180, 180, 180),
-                Location = new Point(640, 45),
-                AutoSize = true
+                AutoSize = true,
+                Margin = new Padding(0, 7, 4, 0)
             };
-
             cmbOperator = new ComboBox
             {
-                Location = new Point(710, 42),
                 Size = new Size(120, 23),
                 BackColor = Color.FromArgb(60, 60, 60),
                 ForeColor = Color.White,
                 DropDownStyle = ComboBoxStyle.DropDownList,
-                FlatStyle = FlatStyle.Flat
+                FlatStyle = FlatStyle.Flat,
+                Margin = new Padding(0, 3, 16, 0)
             };
 
             // 按钮
@@ -138,11 +148,11 @@ namespace BuildingFireTest.UI
                 Text = "查询",
                 Font = new Font("Microsoft YaHei", 9F, FontStyle.Bold),
                 Size = new Size(80, 30),
-                Location = new Point(860, 39),
                 BackColor = Color.FromArgb(0, 122, 204),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
+                Cursor = Cursors.Hand,
+                Margin = new Padding(0, 2, 6, 0)
             };
             btnSearch.FlatAppearance.BorderSize = 0;
             btnSearch.Click += BtnSearch_Click!;
@@ -152,11 +162,11 @@ namespace BuildingFireTest.UI
                 Text = "清除",
                 Font = new Font("Microsoft YaHei", 9F),
                 Size = new Size(60, 30),
-                Location = new Point(950, 39),
                 BackColor = Color.FromArgb(80, 80, 80),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
+                Cursor = Cursors.Hand,
+                Margin = new Padding(0, 2, 6, 0)
             };
             btnClearFilter.FlatAppearance.BorderSize = 0;
             btnClearFilter.Click += BtnClearFilter_Click!;
@@ -166,28 +176,40 @@ namespace BuildingFireTest.UI
                 Text = "导出Excel",
                 Font = new Font("Microsoft YaHei", 9F),
                 Size = new Size(100, 30),
-                Location = new Point(1030, 39),
                 BackColor = Color.FromArgb(0, 150, 100),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
+                Cursor = Cursors.Hand,
+                Margin = new Padding(0, 2, 0, 0)
             };
             btnExportResults.FlatAppearance.BorderSize = 0;
             btnExportResults.Click += BtnExportResults_Click!;
 
-            pnlFilter.Controls.AddRange(new Control[] {
-                lblFilterTitle, lblStartDate, dtpStartDate, lblEndDate, dtpEndDate,
-                lblProductId, txtSearchProductId, lblOperator, cmbOperator,
+            flowFilter.Controls.AddRange(new Control[] {
+                lblStartDate, dtpStartDate,
+                lblEndDate, dtpEndDate,
+                lblProductId, txtSearchProductId,
+                lblOperator, cmbOperator,
                 btnSearch, btnClearFilter, btnExportResults
             });
 
-            // ========== 结果面板 ==========
+            pnlFilter.Controls.Add(flowFilter);
+            pnlFilter.Controls.Add(lblFilterTitle);
+
+            // ========== 下方：结果面板 ==========
             var pnlResults = new Panel
             {
-                Location = new Point(15, 110),
-                Size = new Size(1220, 620),
+                Dock = DockStyle.Fill,
                 BackColor = Color.FromArgb(40, 40, 40),
-                BorderStyle = BorderStyle.FixedSingle
+                Padding = new Padding(15, 10, 15, 10)
+            };
+
+            var pnlResultsHeader = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 30,
+                BackColor = Color.FromArgb(40, 40, 40),
+                Padding = new Padding(0)
             };
 
             var lblResultsTitle = new Label
@@ -195,8 +217,9 @@ namespace BuildingFireTest.UI
                 Text = "查询结果",
                 Font = new Font("Microsoft YaHei", 12F, FontStyle.Bold),
                 ForeColor = Color.White,
-                Location = new Point(20, 15),
-                AutoSize = true
+                Dock = DockStyle.Left,
+                AutoSize = true,
+                TextAlign = ContentAlignment.MiddleLeft
             };
 
             lblResultCount = new Label
@@ -204,14 +227,17 @@ namespace BuildingFireTest.UI
                 Text = "共 0 条记录",
                 Font = new Font("Microsoft YaHei", 9F),
                 ForeColor = Color.FromArgb(160, 160, 160),
-                Location = new Point(110, 18),
-                AutoSize = true
+                Dock = DockStyle.Left,
+                AutoSize = true,
+                Padding = new Padding(8, 5, 0, 0)
             };
+
+            pnlResultsHeader.Controls.Add(lblResultCount);
+            pnlResultsHeader.Controls.Add(lblResultsTitle);
 
             dgvResults = new DataGridView
             {
-                Location = new Point(20, 50),
-                Size = new Size(1180, 550),
+                Dock = DockStyle.Fill,
                 BackgroundColor = Color.FromArgb(30, 30, 30),
                 BorderStyle = BorderStyle.None,
                 AllowUserToAddRows = false,
@@ -238,14 +264,15 @@ namespace BuildingFireTest.UI
                 GridColor = Color.FromArgb(70, 70, 70)
             };
 
-            // 双击行查看详情
             dgvResults.CellDoubleClick += DgvResults_CellDoubleClick!;
 
-            pnlResults.Controls.AddRange(new Control[] {
-                lblResultsTitle, lblResultCount, dgvResults
-            });
+            // 注意添加顺序：Dock从底/右开始排列
+            pnlResults.Controls.Add(dgvResults);
+            pnlResults.Controls.Add(pnlResultsHeader);
 
-            this.Controls.AddRange(new Control[] { pnlFilter, pnlResults });
+            // 添加到 UserControl（先Fill后Top）
+            this.Controls.Add(pnlResults);
+            this.Controls.Add(pnlFilter);
         }
 
         private void LoadOperators()
@@ -285,8 +312,8 @@ namespace BuildingFireTest.UI
         {
             try
             {
-                string operatorName = null;
-                if (cmbOperator.SelectedIndex > 0)  // 索引0是"（全部）"
+                string? operatorName = null;
+                if (cmbOperator.SelectedIndex > 0)
                     operatorName = cmbOperator.SelectedItem?.ToString();
 
                 DataTable dt = _dataService.QueryTestRecords(

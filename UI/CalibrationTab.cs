@@ -10,7 +10,7 @@ namespace BuildingFireTest.UI
 {
     /// <summary>
     /// 设备校准Tab页面
-    /// 实时显示校准温、记录校准数据、查看历史校准记录
+    /// 使用 Dock 停靠布局，自适应窗口尺寸
     /// </summary>
     public partial class CalibrationTab : UserControl
     {
@@ -18,7 +18,6 @@ namespace BuildingFireTest.UI
         private readonly IDataService _dataService;
 
         // ========== 上方：实时校准温度 ==========
-        private Label lblCalTempTitle;
         private Label lblCalTempValue;
         private Button btnRecordCalPoint;
         private TextBox txtStandardTemp;
@@ -38,101 +37,132 @@ namespace BuildingFireTest.UI
         private void InitializeComponent()
         {
             this.BackColor = Color.FromArgb(30, 30, 30);
+            this.Padding = new Padding(10);
 
-            // ========== 顶部：实时校准区 ==========
-            var pnlLive = new Panel
+            // ========== 整体布局：上方校准区 + 下方历史表格 ==========
+            // 使用 SplitContainer 让两部分可调整大小
+            var splitter = new SplitContainer
             {
-                Location = new Point(15, 15),
-                Size = new Size(1220, 130),
-                BackColor = Color.FromArgb(40, 40, 40),
-                BorderStyle = BorderStyle.FixedSingle
+                Dock = DockStyle.Fill,
+                Orientation = Orientation.Horizontal,
+                BackColor = Color.FromArgb(30, 30, 30),
+                SplitterDistance = 160,
+                Panel1MinSize = 120,
+                FixedPanel = FixedPanel.Panel1
             };
+
+            // ========== 上方：实时校准区 ==========
+            var pnlLive = splitter.Panel1;
+            pnlLive.BackColor = Color.FromArgb(40, 40, 40);
+            pnlLive.Padding = new Padding(15, 12, 15, 12);
 
             var lblLiveTitle = new Label
             {
                 Text = "实时校准温度",
                 Font = new Font("Microsoft YaHei", 12F, FontStyle.Bold),
                 ForeColor = Color.White,
-                Location = new Point(20, 15),
-                AutoSize = true
+                Dock = DockStyle.Top,
+                Height = 28,
+                TextAlign = ContentAlignment.MiddleLeft
             };
 
-            lblCalTempTitle = new Label
+            // 校准温度显示行：使用 FlowLayoutPanel 避免重叠
+            var flowCal = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Top,
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = false,
+                AutoSize = true,
+                Padding = new Padding(0, 10, 0, 0),
+                Margin = new Padding(0)
+            };
+
+            var lblCalTitle = new Label
             {
                 Text = "校准通道 (TCal)：",
                 Font = new Font("Microsoft YaHei", 10F),
                 ForeColor = Color.FromArgb(180, 180, 180),
-                Location = new Point(20, 55),
-                AutoSize = true
+                AutoSize = true,
+                Margin = new Padding(0, 8, 10, 0)
             };
+            flowCal.Controls.Add(lblCalTitle);
 
             lblCalTempValue = new Label
             {
                 Text = "0.0 °C",
-                Font = new Font("Consolas", 32F, FontStyle.Bold),
+                Font = new Font("Consolas", 26F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(200, 180, 100),
                 BackColor = Color.FromArgb(20, 20, 20),
-                Location = new Point(200, 42),
-                Size = new Size(250, 55),
+                Size = new Size(200, 48),
                 TextAlign = ContentAlignment.MiddleCenter,
-                BorderStyle = BorderStyle.FixedSingle
+                BorderStyle = BorderStyle.FixedSingle,
+                Margin = new Padding(0, 0, 25, 0)
             };
+            flowCal.Controls.Add(lblCalTempValue);
 
             var lblStdTemp = new Label
             {
                 Text = "标准温度值：",
                 Font = new Font("Microsoft YaHei", 10F),
                 ForeColor = Color.FromArgb(180, 180, 180),
-                Location = new Point(500, 55),
-                AutoSize = true
+                AutoSize = true,
+                Margin = new Padding(0, 14, 8, 0)
             };
+            flowCal.Controls.Add(lblStdTemp);
 
             txtStandardTemp = new TextBox
             {
                 Text = "750.0",
-                Location = new Point(605, 52),
                 Size = new Size(80, 25),
                 BackColor = Color.FromArgb(60, 60, 60),
                 ForeColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle,
-                Font = new Font("Microsoft YaHei", 10F)
+                Font = new Font("Microsoft YaHei", 10F),
+                Margin = new Padding(0, 11, 10, 0)
             };
+            flowCal.Controls.Add(txtStandardTemp);
 
             btnRecordCalPoint = new Button
             {
                 Text = "记录校准点",
                 Font = new Font("Microsoft YaHei", 10F),
-                Size = new Size(120, 35),
-                Location = new Point(710, 46),
+                Size = new Size(110, 34),
                 BackColor = Color.FromArgb(0, 122, 204),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
+                Cursor = Cursors.Hand,
+                Margin = new Padding(0, 8, 0, 0)
             };
             btnRecordCalPoint.FlatAppearance.BorderSize = 0;
             btnRecordCalPoint.Click += BtnRecordCalPoint_Click!;
+            flowCal.Controls.Add(btnRecordCalPoint);
 
             lblLastRecorded = new Label
             {
                 Text = "尚未记录校准点",
                 Font = new Font("Microsoft YaHei", 9F),
                 ForeColor = Color.FromArgb(140, 140, 140),
-                Location = new Point(20, 100),
-                AutoSize = true
+                Dock = DockStyle.Top,
+                AutoSize = true,
+                Padding = new Padding(0, 6, 0, 0)
             };
 
-            pnlLive.Controls.AddRange(new Control[] {
-                lblLiveTitle, lblCalTempTitle, lblCalTempValue,
-                lblStdTemp, txtStandardTemp, btnRecordCalPoint, lblLastRecorded
-            });
+            // 注意添加顺序：Dock从底部开始排列
+            pnlLive.Controls.Add(lblLastRecorded);
+            pnlLive.Controls.Add(flowCal);
+            pnlLive.Controls.Add(lblLiveTitle);
 
-            // ========== 底部：历史校准记录 ==========
-            var pnlHistory = new Panel
+            // ========== 下方：历史校准记录 ==========
+            var pnlHistory = splitter.Panel2;
+            pnlHistory.BackColor = Color.FromArgb(40, 40, 40);
+            pnlHistory.Padding = new Padding(15, 12, 15, 12);
+
+            var pnlHistoryHeader = new Panel
             {
-                Location = new Point(15, 160),
-                Size = new Size(1220, 560),
+                Dock = DockStyle.Top,
+                Height = 36,
                 BackColor = Color.FromArgb(40, 40, 40),
-                BorderStyle = BorderStyle.FixedSingle
+                Padding = new Padding(0)
             };
 
             var lblHistoryTitle = new Label
@@ -140,8 +170,9 @@ namespace BuildingFireTest.UI
                 Text = "历史校准记录",
                 Font = new Font("Microsoft YaHei", 12F, FontStyle.Bold),
                 ForeColor = Color.White,
-                Location = new Point(20, 15),
-                AutoSize = true
+                Dock = DockStyle.Left,
+                AutoSize = true,
+                TextAlign = ContentAlignment.MiddleLeft
             };
 
             btnRefreshHistory = new Button
@@ -149,19 +180,21 @@ namespace BuildingFireTest.UI
                 Text = "刷新",
                 Font = new Font("Microsoft YaHei", 9F),
                 Size = new Size(80, 30),
-                Location = new Point(1120, 10),
                 BackColor = Color.FromArgb(80, 80, 80),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
+                Cursor = Cursors.Hand,
+                Dock = DockStyle.Right
             };
             btnRefreshHistory.FlatAppearance.BorderSize = 0;
             btnRefreshHistory.Click += BtnRefreshHistory_Click!;
 
+            pnlHistoryHeader.Controls.Add(lblHistoryTitle);
+            pnlHistoryHeader.Controls.Add(btnRefreshHistory);
+
             dgvCalibrationHistory = new DataGridView
             {
-                Location = new Point(20, 55),
-                Size = new Size(1180, 490),
+                Dock = DockStyle.Fill,
                 BackgroundColor = Color.FromArgb(30, 30, 30),
                 BorderStyle = BorderStyle.None,
                 AllowUserToAddRows = false,
@@ -188,11 +221,11 @@ namespace BuildingFireTest.UI
                 GridColor = Color.FromArgb(70, 70, 70)
             };
 
-            pnlHistory.Controls.AddRange(new Control[] {
-                lblHistoryTitle, btnRefreshHistory, dgvCalibrationHistory
-            });
+            pnlHistory.Controls.Add(dgvCalibrationHistory);
+            pnlHistory.Controls.Add(pnlHistoryHeader);
 
-            this.Controls.AddRange(new Control[] { pnlLive, pnlHistory });
+            // 添加 splitter 到 UserControl
+            this.Controls.Add(splitter);
         }
 
         /// <summary>

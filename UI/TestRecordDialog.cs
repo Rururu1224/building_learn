@@ -9,18 +9,18 @@ namespace BuildingFireTest.UI
 {
     /// <summary>
     /// 试验现象记录弹窗
-    /// 填写火焰信息、试验后质量、备注
+    /// 使用 TableLayoutPanel 布局，避免文字堆叠
     /// </summary>
     public partial class TestRecordDialog : Form
     {
         // ========== 控件 ==========
         private CheckBox chkHasFlame;
-        private Label lblFlameStart, lblFlameDuration;
         private NumericUpDown nudFlameStart, nudFlameDuration;
         private TextBox txtPostWeight;
         private TextBox txtRemark;
         private Button btnSave, btnCancel;
         private Label lblError;
+        private Label lblFlameStart, lblFlameDuration;
 
         /// <summary>
         /// 收集的试验现象记录（DialogResult.OK时有效）
@@ -35,78 +35,110 @@ namespace BuildingFireTest.UI
         private void InitializeComponent()
         {
             this.Text = "试验现象记录";
-            this.Size = new Size(440, 400);
+            this.Size = new Size(460, 460);
+            this.MinimumSize = new Size(400, 400);
             this.StartPosition = FormStartPosition.CenterParent;
-            this.FormBorderStyle = FormBorderStyle.FixedDialog;
-            this.MaximizeBox = false;
+            this.FormBorderStyle = FormBorderStyle.Sizable;
+            this.MaximizeBox = true;
             this.MinimizeBox = false;
             this.BackColor = Color.FromArgb(45, 45, 45);
             this.Font = new Font("Microsoft YaHei", 9F);
+            this.AutoScaleMode = AutoScaleMode.Font;
 
-            int leftLabel = 25, leftInput = 155, inputWidth = 180;
-            int y = 15, rowHeight = 35;
+            var mainTable = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 2,
+                BackColor = Color.FromArgb(45, 45, 45),
+                Padding = new Padding(22, 15, 22, 15),
+                Margin = new Padding(0),
+                AutoScroll = true
+            };
 
-            // ========== 标题 ==========
+            mainTable.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 130));
+            mainTable.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+
+            int row = 0;
+
+            // ===== 标题 =====
             var lblTitle = new Label
             {
                 Text = "请填写试验现象记录",
                 Font = new Font("Microsoft YaHei", 12F, FontStyle.Bold),
                 ForeColor = Color.White,
-                Location = new Point(leftLabel, y),
-                AutoSize = true
+                Margin = new Padding(0, 0, 0, 10)
             };
-            y += 40;
+            mainTable.Controls.Add(lblTitle, 0, row);
+            mainTable.SetColumnSpan(lblTitle, 2);
+            mainTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 36));
+            row++;
 
-            // ========== 火焰信息 ==========
+            // ===== 火焰复选框 =====
             chkHasFlame = new CheckBox
             {
                 Text = "是否出现持续火焰",
                 ForeColor = Color.FromArgb(200, 200, 200),
-                Location = new Point(leftLabel, y),
                 AutoSize = true,
-                Checked = false
+                Margin = new Padding(0, 6, 0, 6)
             };
+            mainTable.Controls.Add(chkHasFlame, 0, row);
+            mainTable.SetColumnSpan(chkHasFlame, 2);
+            mainTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 32));
+            row++;
 
+            // ===== 火焰发生时刻 =====
             lblFlameStart = new Label
             {
                 Text = "火焰发生时刻 (秒)：",
                 ForeColor = Color.FromArgb(180, 180, 180),
-                Location = new Point(leftLabel + 20, y + 28),
-                AutoSize = true,
-                Enabled = false
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleRight,
+                Enabled = false,
+                Margin = new Padding(0, 6, 8, 0)
             };
+            mainTable.Controls.Add(lblFlameStart, 0, row);
 
             nudFlameStart = new NumericUpDown
             {
                 Minimum = 0,
                 Maximum = 3600,
-                Location = new Point(leftInput + 10, y + 25),
-                Size = new Size(80, 23),
+                Size = new Size(100, 25),
                 Enabled = false,
                 BackColor = Color.FromArgb(60, 60, 60),
-                ForeColor = Color.White
+                ForeColor = Color.White,
+                Margin = new Padding(0, 3, 0, 0)
             };
+            mainTable.Controls.Add(nudFlameStart, 1, row);
+            mainTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 33));
+            row++;
 
+            // ===== 火焰持续时间 =====
             lblFlameDuration = new Label
             {
                 Text = "火焰持续时间 (秒)：",
                 ForeColor = Color.FromArgb(180, 180, 180),
-                Location = new Point(leftLabel + 20, y + 56),
-                AutoSize = true,
-                Enabled = false
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleRight,
+                Enabled = false,
+                Margin = new Padding(0, 6, 8, 0)
             };
+            mainTable.Controls.Add(lblFlameDuration, 0, row);
 
             nudFlameDuration = new NumericUpDown
             {
                 Minimum = 0,
                 Maximum = 3600,
-                Location = new Point(leftInput + 10, y + 53),
-                Size = new Size(80, 23),
+                Size = new Size(100, 25),
                 Enabled = false,
                 BackColor = Color.FromArgb(60, 60, 60),
-                ForeColor = Color.White
+                ForeColor = Color.White,
+                Margin = new Padding(0, 3, 0, 0)
             };
+            mainTable.Controls.Add(nudFlameDuration, 1, row);
+            mainTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 33));
+            row++;
 
+            // 启用/禁用联动
             chkHasFlame.CheckedChanged += (s, e) =>
             {
                 bool hasFlame = chkHasFlame.Checked;
@@ -116,79 +148,106 @@ namespace BuildingFireTest.UI
                 nudFlameDuration.Enabled = hasFlame;
             };
 
-            y += 85;
+            // 间隔
+            mainTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 8));
+            var spacer1 = new Label { Height = 1, Margin = new Padding(0) };
+            mainTable.Controls.Add(spacer1, 0, row);
+            mainTable.SetColumnSpan(spacer1, 2);
+            row++;
 
-            // ========== 试验后质量 ==========
+            // ===== 试验后质量 =====
+            var pnlPostWeight = new Panel { Dock = DockStyle.Fill, Margin = new Padding(0) };
             var lblPostWeight = new Label
             {
                 Text = "试验后质量 (g)：",
                 ForeColor = Color.FromArgb(200, 200, 200),
-                Location = new Point(leftLabel, y + 3),
-                AutoSize = true
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleRight,
+                Margin = new Padding(0, 6, 8, 0)
             };
-
+            pnlPostWeight.Controls.Add(lblPostWeight);
             var lblRequired = new Label
             {
                 Text = "*必填",
                 ForeColor = Color.FromArgb(255, 100, 100),
-                Location = new Point(leftLabel, y + 20),
-                AutoSize = true,
-                Font = new Font("Microsoft YaHei", 7F)
+                Font = new Font("Microsoft YaHei", 7F),
+                Dock = DockStyle.Bottom,
+                Height = 14,
+                Margin = new Padding(0, 0, 0, 2)
             };
+            pnlPostWeight.Controls.Add(lblRequired);
+            mainTable.Controls.Add(pnlPostWeight, 0, row);
 
             txtPostWeight = new TextBox
             {
-                Location = new Point(leftInput, y),
-                Size = new Size(inputWidth, 23),
+                Dock = DockStyle.Fill,
                 BackColor = Color.FromArgb(60, 60, 60),
                 ForeColor = Color.White,
-                BorderStyle = BorderStyle.FixedSingle
+                BorderStyle = BorderStyle.FixedSingle,
+                Margin = new Padding(0, 3, 0, 0)
             };
-            y += rowHeight + 5;
+            mainTable.Controls.Add(txtPostWeight, 1, row);
+            mainTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
+            row++;
 
-            // ========== 备注 ==========
+            // ===== 备注 =====
             var lblRemark = new Label
             {
                 Text = "备注：",
                 ForeColor = Color.FromArgb(200, 200, 200),
-                Location = new Point(leftLabel, y),
-                AutoSize = true
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.TopRight,
+                Margin = new Padding(0, 8, 8, 0)
             };
-            y += 22;
+            mainTable.Controls.Add(lblRemark, 0, row);
 
             txtRemark = new TextBox
             {
-                Location = new Point(leftLabel, y),
-                Size = new Size(380, 60),
+                Size = new Size(240, 70),
                 Multiline = true,
                 BackColor = Color.FromArgb(60, 60, 60),
                 ForeColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle,
-                ScrollBars = ScrollBars.Vertical
+                ScrollBars = ScrollBars.Vertical,
+                Dock = DockStyle.Fill,
+                Margin = new Padding(0, 5, 0, 0)
             };
-            y += 70;
+            mainTable.Controls.Add(txtRemark, 1, row);
+            mainTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 80));
+            row++;
 
-            // ========== 错误提示 ==========
+            // ===== 错误提示 =====
             lblError = new Label
             {
                 ForeColor = Color.FromArgb(255, 100, 100),
-                Location = new Point(leftLabel, y),
                 AutoSize = true,
-                Visible = false
+                Visible = false,
+                Margin = new Padding(0, 6, 0, 4)
             };
-            y += 25;
+            mainTable.Controls.Add(lblError, 0, row);
+            mainTable.SetColumnSpan(lblError, 2);
+            mainTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 24));
+            row++;
 
-            // ========== 按钮 ==========
+            // ===== 按钮 =====
+            var btnFlow = new FlowLayoutPanel
+            {
+                FlowDirection = FlowDirection.LeftToRight,
+                AutoSize = true,
+                Margin = new Padding(0, 8, 0, 0),
+                Padding = new Padding(0)
+            };
+
             btnSave = new Button
             {
                 Text = "保存记录",
                 Font = new Font("Microsoft YaHei", 10F, FontStyle.Bold),
-                Size = new Size(110, 35),
-                Location = new Point(120, y),
+                Size = new Size(120, 36),
                 BackColor = Color.FromArgb(0, 150, 100),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
+                Cursor = Cursors.Hand,
+                Margin = new Padding(0, 0, 12, 0)
             };
             btnSave.FlatAppearance.BorderSize = 0;
             btnSave.Click += BtnSave_Click!;
@@ -197,28 +256,27 @@ namespace BuildingFireTest.UI
             {
                 Text = "取消",
                 Font = new Font("Microsoft YaHei", 10F),
-                Size = new Size(80, 35),
-                Location = new Point(245, y),
+                Size = new Size(90, 36),
                 BackColor = Color.FromArgb(80, 80, 80),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
+                Cursor = Cursors.Hand,
+                Margin = new Padding(0)
             };
             btnCancel.FlatAppearance.BorderSize = 0;
             btnCancel.Click += (s, e) => { this.DialogResult = DialogResult.Cancel; this.Close(); };
 
-            this.Controls.AddRange(new Control[] {
-                lblTitle, chkHasFlame, lblFlameStart, nudFlameStart,
-                lblFlameDuration, nudFlameDuration,
-                lblPostWeight, lblRequired, txtPostWeight,
-                lblRemark, txtRemark,
-                lblError, btnSave, btnCancel
-            });
+            btnFlow.Controls.AddRange(new Control[] { btnSave, btnCancel });
+            mainTable.Controls.Add(btnFlow, 0, row);
+            mainTable.SetColumnSpan(btnFlow, 2);
+            mainTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 48));
+            row++;
+
+            this.Controls.Add(mainTable);
         }
 
         private void BtnSave_Click(object sender, EventArgs e)
         {
-            // 试验后质量必填
             if (string.IsNullOrWhiteSpace(txtPostWeight.Text))
             {
                 ShowError("请输入试验后质量");

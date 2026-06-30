@@ -9,7 +9,7 @@ namespace BuildingFireTest.UI
 {
     /// <summary>
     /// 新建试验弹窗
-    /// 填写样品信息、试验参数、初始质量，设备信息自动带入
+    /// 使用 TableLayoutPanel 布局，避免文字堆叠，适应不同 DPI
     /// </summary>
     public partial class NewTestDialog : Form
     {
@@ -41,60 +41,118 @@ namespace BuildingFireTest.UI
         private void InitializeComponent()
         {
             this.Text = "新建试验";
-            this.Size = new Size(520, 580);
+            this.Size = new Size(540, 700);
+            this.MinimumSize = new Size(480, 600);
             this.StartPosition = FormStartPosition.CenterParent;
-            this.FormBorderStyle = FormBorderStyle.FixedDialog;
-            this.MaximizeBox = false;
+            this.FormBorderStyle = FormBorderStyle.Sizable;
+            this.MaximizeBox = true;
             this.MinimizeBox = false;
             this.BackColor = Color.FromArgb(45, 45, 45);
             this.Font = new Font("Microsoft YaHei", 9F);
+            this.AutoScaleMode = AutoScaleMode.Font;
 
-            int leftLabel = 25, leftInput = 140, inputWidth = 160;
-            int y = 15, rowHeight = 35;
+            // ========== 主布局：使用单个 TableLayoutPanel ==========
+            var mainTable = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 2,
+                BackColor = Color.FromArgb(45, 45, 45),
+                Padding = new Padding(20, 15, 20, 15),
+                Margin = new Padding(0),
+                AutoScroll = true
+            };
 
-            // ========== 环境信息 ==========
-            var lblSection1 = CreateSectionLabel("环境信息", leftLabel, y); y += 28;
-            CreateField("环境温度 (°C)：", leftLabel, y, out txtEnvTemp, leftInput, inputWidth, "25.0"); y += rowHeight;
-            CreateField("环境湿度 (%)：", leftLabel, y, out txtEnvHumidity, leftInput, inputWidth, "50.0"); y += rowHeight + 5;
+            // 两列：标签列（固定宽）、输入列（自适应）
+            mainTable.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
+            mainTable.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
 
-            // ========== 样品信息 ==========
-            var lblSection2 = CreateSectionLabel("样品信息", leftLabel, y); y += 28;
-            CreateField("样品编号：", leftLabel, y, out txtProductId, leftInput, inputWidth); y += rowHeight;
-            CreateField("试验标识：", leftLabel, y, out txtTestId, leftInput, inputWidth); y += rowHeight;
-            CreateField("样品名称：", leftLabel, y, out txtProductName, leftInput, inputWidth); y += rowHeight;
-            CreateField("规格型号：", leftLabel, y, out txtSpecification, leftInput, inputWidth); y += rowHeight;
-            CreateField("高度 (mm)：", leftLabel, y, out txtHeight, leftInput, inputWidth, "50.0"); y += rowHeight;
-            CreateField("直径 (mm)：", leftLabel, y, out txtDiameter, leftInput, inputWidth, "45.0"); y += rowHeight + 5;
+            int row = 0;
 
-            // ========== 试验参数 ==========
-            var lblSection3 = CreateSectionLabel("试验参数", leftLabel, y); y += 28;
-            CreateField("操作员：", leftLabel, y, out txtOperator, leftInput, inputWidth); y += rowHeight;
-            CreateField("初始质量 (g)：", leftLabel, y, out txtPreWeight, leftInput, inputWidth); y += rowHeight;
+            // ===== 环境信息标题 =====
+            var lblSection1 = CreateSectionLabel("环境信息");
+            mainTable.Controls.Add(lblSection1, 0, row);
+            mainTable.SetColumnSpan(lblSection1, 2);
+            mainTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
+            row++;
 
-            // 试验时长模式
+            // 环境温度
+            AddFieldRow(mainTable, "环境温度 (°C)：", out txtEnvTemp, "25.0", row); row++;
+            // 环境湿度
+            AddFieldRow(mainTable, "环境湿度 (%)：", out txtEnvHumidity, "50.0", row); row++;
+
+            // 间隔
+            mainTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 8));
+            var spacer1 = new Label { Height = 1, Margin = new Padding(0) };
+            mainTable.Controls.Add(spacer1, 0, row);
+            mainTable.SetColumnSpan(spacer1, 2);
+            row++;
+
+            // ===== 样品信息标题 =====
+            var lblSection2 = CreateSectionLabel("样品信息");
+            mainTable.Controls.Add(lblSection2, 0, row);
+            mainTable.SetColumnSpan(lblSection2, 2);
+            mainTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
+            row++;
+
+            AddFieldRow(mainTable, "样品编号 *：", out txtProductId, "", row); row++;
+            AddFieldRow(mainTable, "试验标识 *：", out txtTestId, "", row); row++;
+            AddFieldRow(mainTable, "样品名称：", out txtProductName, "", row); row++;
+            AddFieldRow(mainTable, "规格型号：", out txtSpecification, "", row); row++;
+            AddFieldRow(mainTable, "高度 (mm)：", out txtHeight, "50.0", row); row++;
+            AddFieldRow(mainTable, "直径 (mm)：", out txtDiameter, "45.0", row); row++;
+
+            // 间隔
+            mainTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 8));
+            var spacer2 = new Label { Height = 1, Margin = new Padding(0) };
+            mainTable.Controls.Add(spacer2, 0, row);
+            mainTable.SetColumnSpan(spacer2, 2);
+            row++;
+
+            // ===== 试验参数标题 =====
+            var lblSection3 = CreateSectionLabel("试验参数");
+            mainTable.Controls.Add(lblSection3, 0, row);
+            mainTable.SetColumnSpan(lblSection3, 2);
+            mainTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
+            row++;
+
+            AddFieldRow(mainTable, "操作员 *：", out txtOperator, "", row); row++;
+            AddFieldRow(mainTable, "初始质量 (g) *：", out txtPreWeight, "", row); row++;
+
+            // 时长模式行（特殊处理）
             var lblMode = new Label
             {
                 Text = "时长模式：",
                 ForeColor = Color.FromArgb(200, 200, 200),
-                Location = new Point(leftLabel, y),
-                AutoSize = true
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleRight,
+                Margin = new Padding(0, 6, 8, 0)
+            };
+            mainTable.Controls.Add(lblMode, 0, row);
+
+            var flowDuration = new FlowLayoutPanel
+            {
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = false,
+                AutoSize = true,
+                Margin = new Padding(0, 3, 0, 0),
+                Padding = new Padding(0)
             };
 
             rbStandard = new RadioButton
             {
                 Text = "标准60分钟",
                 ForeColor = Color.FromArgb(200, 200, 200),
-                Location = new Point(leftInput, y),
                 AutoSize = true,
-                Checked = true
+                Checked = true,
+                Margin = new Padding(0, 0, 12, 0)
             };
 
             rbCustom = new RadioButton
             {
                 Text = "自定义",
                 ForeColor = Color.FromArgb(200, 200, 200),
-                Location = new Point(leftInput + 125, y),
-                AutoSize = true
+                AutoSize = true,
+                Margin = new Padding(0, 0, 8, 0)
             };
 
             nudCustomMinutes = new NumericUpDown
@@ -102,52 +160,86 @@ namespace BuildingFireTest.UI
                 Minimum = 1,
                 Maximum = 600,
                 Value = 30,
-                Location = new Point(leftInput + 205, y - 2),
-                Size = new Size(55, 23),
+                Size = new Size(60, 25),
                 Enabled = false,
                 BackColor = Color.FromArgb(60, 60, 60),
-                ForeColor = Color.White
+                ForeColor = Color.White,
+                Margin = new Padding(0, 0, 6, 0)
             };
 
             var lblMinutes = new Label
             {
                 Text = "分钟",
                 ForeColor = Color.FromArgb(180, 180, 180),
-                Location = new Point(leftInput + 265, y),
-                AutoSize = true
+                AutoSize = true,
+                Margin = new Padding(0, 4, 0, 0)
             };
 
             rbCustom.CheckedChanged += (s, e) => nudCustomMinutes.Enabled = rbCustom.Checked;
-            y += rowHeight + 5;
 
-            // ========== 设备信息（自动带入，只读） ==========
-            var lblSection4 = CreateSectionLabel("设备信息（自动带入）", leftLabel, y); y += 28;
-            CreateReadOnlyField("设备编号：", leftLabel, y, out txtDeviceId, leftInput, inputWidth); y += rowHeight;
-            CreateReadOnlyField("设备名称：", leftLabel, y, out txtDeviceName, leftInput, inputWidth); y += rowHeight;
-            CreateReadOnlyField("检定日期：", leftLabel, y, out txtCalibrationDate, leftInput, inputWidth); y += rowHeight;
-            CreateReadOnlyField("恒功率值：", leftLabel, y, out txtConstPower, leftInput, inputWidth); y += rowHeight + 10;
+            flowDuration.Controls.AddRange(new Control[] { rbStandard, rbCustom, nudCustomMinutes, lblMinutes });
+            mainTable.Controls.Add(flowDuration, 1, row);
+            mainTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 35));
+            row++;
 
-            // ========== 错误提示 ==========
+            // 间隔
+            mainTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 8));
+            var spacer3 = new Label { Height = 1, Margin = new Padding(0) };
+            mainTable.Controls.Add(spacer3, 0, row);
+            mainTable.SetColumnSpan(spacer3, 2);
+            row++;
+
+            // ===== 设备信息标题 =====
+            var lblSection4 = CreateSectionLabel("设备信息（自动带入）");
+            mainTable.Controls.Add(lblSection4, 0, row);
+            mainTable.SetColumnSpan(lblSection4, 2);
+            mainTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
+            row++;
+
+            AddReadOnlyFieldRow(mainTable, "设备编号：", out txtDeviceId, row); row++;
+            AddReadOnlyFieldRow(mainTable, "设备名称：", out txtDeviceName, row); row++;
+            AddReadOnlyFieldRow(mainTable, "检定日期：", out txtCalibrationDate, row); row++;
+            AddReadOnlyFieldRow(mainTable, "恒功率值：", out txtConstPower, row); row++;
+
+            // 间隔
+            mainTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 10));
+            var spacer4 = new Label { Height = 1, Margin = new Padding(0) };
+            mainTable.Controls.Add(spacer4, 0, row);
+            mainTable.SetColumnSpan(spacer4, 2);
+            row++;
+
+            // ===== 错误提示 =====
             lblError = new Label
             {
                 ForeColor = Color.FromArgb(255, 100, 100),
-                Location = new Point(leftLabel, y),
                 AutoSize = true,
-                Visible = false
+                Visible = false,
+                Margin = new Padding(0, 4, 0, 4)
             };
-            y += 25;
+            mainTable.Controls.Add(lblError, 0, row);
+            mainTable.SetColumnSpan(lblError, 2);
+            mainTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 24));
+            row++;
 
-            // ========== 按钮 ==========
+            // ===== 按钮行 =====
+            var btnFlow = new FlowLayoutPanel
+            {
+                FlowDirection = FlowDirection.LeftToRight,
+                AutoSize = true,
+                Margin = new Padding(0, 6, 0, 0),
+                Padding = new Padding(0)
+            };
+
             btnCreate = new Button
             {
                 Text = "创建试验",
                 Font = new Font("Microsoft YaHei", 10F, FontStyle.Bold),
-                Size = new Size(110, 35),
-                Location = new Point(140, y),
+                Size = new Size(120, 36),
                 BackColor = Color.FromArgb(0, 122, 204),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
+                Cursor = Cursors.Hand,
+                Margin = new Padding(0, 0, 12, 0)
             };
             btnCreate.FlatAppearance.BorderSize = 0;
             btnCreate.Click += BtnCreate_Click;
@@ -156,65 +248,68 @@ namespace BuildingFireTest.UI
             {
                 Text = "取消",
                 Font = new Font("Microsoft YaHei", 10F),
-                Size = new Size(80, 35),
-                Location = new Point(270, y),
+                Size = new Size(90, 36),
                 BackColor = Color.FromArgb(80, 80, 80),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
+                Cursor = Cursors.Hand,
+                Margin = new Padding(0)
             };
             btnCancel.FlatAppearance.BorderSize = 0;
             btnCancel.Click += (s, e) => { this.DialogResult = DialogResult.Cancel; this.Close(); };
 
-            this.Controls.AddRange(new Control[] {
-                lblSection1, txtEnvTemp, txtEnvHumidity,
-                lblSection2, txtProductId, txtTestId, txtProductName, txtSpecification, txtHeight, txtDiameter,
-                lblSection3, txtOperator, txtPreWeight, lblMode, rbStandard, rbCustom, nudCustomMinutes, lblMinutes,
-                lblSection4, txtDeviceId, txtDeviceName, txtCalibrationDate, txtConstPower,
-                lblError, btnCreate, btnCancel
-            });
+            btnFlow.Controls.AddRange(new Control[] { btnCreate, btnCancel });
+            mainTable.Controls.Add(btnFlow, 0, row);
+            mainTable.SetColumnSpan(btnFlow, 2);
+            mainTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 48));
+            row++;
+
+            this.Controls.Add(mainTable);
         }
 
-        private Label CreateSectionLabel(string text, int x, int y)
+        private Label CreateSectionLabel(string text)
         {
             return new Label
             {
                 Text = text,
                 Font = new Font("Microsoft YaHei", 10F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(0, 180, 220),
-                Location = new Point(x, y),
-                AutoSize = true
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Margin = new Padding(0, 4, 0, 0)
             };
         }
 
-        private void CreateField(string labelText, int x, int y,
-            out TextBox textBox, int inputX, int inputWidth, string defaultValue = "")
+        private void AddFieldRow(TableLayoutPanel table, string labelText,
+            out TextBox textBox, string defaultValue, int row)
         {
             var lbl = new Label
             {
                 Text = labelText,
                 ForeColor = Color.FromArgb(200, 200, 200),
-                Location = new Point(x, y + 3),
-                AutoSize = true
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleRight,
+                Margin = new Padding(0, 6, 8, 0)
             };
+            table.Controls.Add(lbl, 0, row);
 
             textBox = new TextBox
             {
-                Location = new Point(inputX, y),
-                Size = new Size(inputWidth, 23),
+                Dock = DockStyle.Fill,
                 BackColor = Color.FromArgb(60, 60, 60),
                 ForeColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle,
-                Text = defaultValue
+                Text = defaultValue,
+                Margin = new Padding(0, 3, 0, 0)
             };
-
-            this.Controls.Add(lbl);
+            table.Controls.Add(textBox, 1, row);
+            table.RowStyles.Add(new RowStyle(SizeType.Absolute, 33));
         }
 
-        private void CreateReadOnlyField(string labelText, int x, int y,
-            out TextBox textBox, int inputX, int inputWidth)
+        private void AddReadOnlyFieldRow(TableLayoutPanel table, string labelText,
+            out TextBox textBox, int row)
         {
-            CreateField(labelText, x, y, out textBox, inputX, inputWidth);
+            AddFieldRow(table, labelText, out textBox, "", row);
             textBox.ReadOnly = true;
             textBox.BackColor = Color.FromArgb(50, 50, 50);
             textBox.ForeColor = Color.FromArgb(160, 160, 160);
@@ -232,7 +327,6 @@ namespace BuildingFireTest.UI
             }
             catch
             {
-                // 设备信息加载失败时使用默认值（不影响其他功能）
                 txtDeviceId.Text = "DEV-001";
                 txtDeviceName.Text = "不燃性试验炉";
                 txtCalibrationDate.Text = DateTime.Now.ToString("yyyy-MM-dd");
@@ -259,7 +353,6 @@ namespace BuildingFireTest.UI
                 return;
             }
 
-            // 数值校验
             if (!TryParseDouble(txtEnvTemp.Text, out double envTemp))
             {
                 ShowError("环境温度请输入有效数字");

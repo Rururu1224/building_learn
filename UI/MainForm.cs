@@ -15,8 +15,7 @@ namespace BuildingFireTest.UI
 {
     /// <summary>
     /// 主窗体
-    /// 温度LED面板、OxyPlot曲线、状态标签、系统消息日志、按钮状态联动
-    /// 所有业务调用通过ICoreService/IDataService接口转发
+    /// 使用 Dock 停靠布局，避免文字堆叠，适应不同 DPI 和窗口尺寸
     /// </summary>
     public partial class MainForm : Form
     {
@@ -40,27 +39,25 @@ namespace BuildingFireTest.UI
         private LineSeries lineCenter;
 
         // ========== 温度LED面板控件 ==========
-        private Panel pnlTempLeds;
-        private Label lblTF1, lblTF2, lblTS, lblTC, lblTCal;
         private Label lblTF1Val, lblTF2Val, lblTSVal, lblTCVal, lblTCalVal;
 
         // ========== 状态信息栏 ==========
-        private Label lblStatusTitle, lblStatusValue;
-        private Label lblTimerTitle, lblTimerValue;
-        private Label lblDriftTitle, lblDriftValue;
-        private Label lblProductTitle, lblProductValue;
+        private Label lblStatusValue;
+        private Label lblTimerValue;
+        private Label lblDriftValue;
+        private Label lblProductValue;
 
         // ========== 系统消息日志 ==========
         private RichTextBox rtbMessageLog;
 
-        // ========== 按钮区域 ==========
-        private Panel pnlButtons;
+        // ========== 按钮 ==========
         private Button btnNewTest;
         private Button btnStartHeating;
         private Button btnStopHeating;
         private Button btnStartRecording;
         private Button btnStopRecording;
         private Button btnTestRecord;
+        private Button btnParameterSettings;
 
         // ========== TabControl ==========
         private TabControl tabControl;
@@ -98,254 +95,345 @@ namespace BuildingFireTest.UI
             this.MinimumSize = new Size(1024, 700);
             this.BackColor = Color.FromArgb(30, 30, 30);
             this.Font = new Font("Microsoft YaHei", 9F);
+            this.AutoScaleMode = AutoScaleMode.Font;
 
             // ========== TabControl ==========
             tabControl = new TabControl
             {
-                Location = new Point(0, 0),
-                Size = new Size(1270, 780),
-                Font = new Font("Microsoft YaHei", 10F),
-                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
+                Dock = DockStyle.Fill,
+                Font = new Font("Microsoft YaHei", 10F)
             };
 
             tabMain = new TabPage("试验控制");
             tabCalibration = new TabPage("设备校准");
             tabRecordQuery = new TabPage("记录查询");
+            tabMain.BackColor = Color.FromArgb(30, 30, 30);
+            tabCalibration.BackColor = Color.FromArgb(30, 30, 30);
+            tabRecordQuery.BackColor = Color.FromArgb(30, 30, 30);
 
             tabControl.TabPages.AddRange(new[] { tabMain, tabCalibration, tabRecordQuery });
 
-            // ========== 主Tab页面布局 ==========
+            // ========== 主Tab页面布局（使用Dock停靠） ==========
             BuildMainTabPage();
 
             this.Controls.Add(tabControl);
             this.FormClosing += MainForm_FormClosing!;
         }
 
-        #region 主Tab页面构建
+        #region 主Tab页面构建（Dock停靠布局）
 
         private void BuildMainTabPage()
         {
-            tabMain.BackColor = Color.FromArgb(30, 30, 30);
+            // 布局结构（从上到下）：
+            //   1. 温度LED面板 (Dock=Top)
+            //   2. 系统消息日志 (Dock=Bottom)
+            //   3. 右侧状态+按钮面板 (Dock=Right)
+            //   4. 温度曲线图 (Dock=Fill，占满剩余空间)
 
-            // --- 顶部：温度LED面板 ---
-            BuildTemperaturePanel();
+            // --- 1. 顶部：温度LED面板 ---
+            var pnlTempLeds = BuildTemperaturePanel();
+            pnlTempLeds.Dock = DockStyle.Top;
+            tabMain.Controls.Add(pnlTempLeds);
 
-            // --- 左侧中间：OxyPlot曲线图 ---
+            // --- 2. 底部：系统消息日志 ---
+            var pnlLog = BuildMessageLogPanel();
+            pnlLog.Dock = DockStyle.Bottom;
+            tabMain.Controls.Add(pnlLog);
+
+            // --- 3. 右侧：状态信息 + 按钮 ---
+            var pnlRight = BuildRightPanel();
+            pnlRight.Dock = DockStyle.Right;
+            tabMain.Controls.Add(pnlRight);
+
+            // --- 4. 中间：OxyPlot曲线图（Fill占满剩余空间） ---
             BuildPlotView();
-
-            // --- 右侧面板：状态信息 + 按钮 ---
-            BuildRightPanel();
-
-            // --- 底部：系统消息日志 ---
-            BuildMessageLog();
-
-            // 添加到tabMain
-            tabMain.Controls.AddRange(new Control[] {
-                pnlTempLeds, plotView, pnlButtons, rtbMessageLog
-            });
-
-            // 右侧状态面板
-            var pnlStatus = BuildStatusPanel();
-            tabMain.Controls.Add(pnlStatus);
+            plotView.Dock = DockStyle.Fill;
+            tabMain.Controls.Add(plotView);
         }
 
-        private void BuildTemperaturePanel()
+        /// <summary>
+        /// 顶部温度LED面板（5通道）
+        /// </summary>
+        private Panel BuildTemperaturePanel()
         {
-            pnlTempLeds = new Panel
+            var pnl = new Panel
             {
-                Location = new Point(10, 10),
-                Size = new Size(1240, 90),
+                Height = 95,
                 BackColor = Color.FromArgb(20, 20, 20),
-                BorderStyle = BorderStyle.FixedSingle
+                Padding = new Padding(8, 6, 8, 6)
             };
 
-            // 5个温度通道的LED显示
+            // 使用 TableLayoutPanel 均分5列，避免手动算坐标
+            var table = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 5,
+                RowCount = 2,
+                BackColor = Color.FromArgb(20, 20, 20),
+                Margin = new Padding(0),
+                Padding = new Padding(0),
+                CellBorderStyle = TableLayoutPanelCellBorderStyle.None
+            };
+
+            // 5列等宽
+            for (int i = 0; i < 5; i++)
+                table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20F));
+
+            // 第0行：通道名（矮），第1行：温度值（高）
+            table.RowStyles.Add(new RowStyle(SizeType.Absolute, 20));
+            table.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+
             var channels = new[]
             {
-                ("炉温1 (TF1)", "0.0 °C", Color.FromArgb(255, 80, 80)),
-                ("炉温2 (TF2)", "0.0 °C", Color.FromArgb(255, 140, 60)),
-                ("表面温 (TS)", "0.0 °C", Color.FromArgb(80, 180, 255)),
-                ("中心温 (TC)", "0.0 °C", Color.FromArgb(80, 255, 120)),
-                ("校准温 (TCal)", "0.0 °C", Color.FromArgb(200, 180, 100))
+                ("炉温1 (TF1)", Color.FromArgb(255, 80, 80)),
+                ("炉温2 (TF2)", Color.FromArgb(255, 140, 60)),
+                ("表面温 (TS)", Color.FromArgb(80, 180, 255)),
+                ("中心温 (TC)", Color.FromArgb(80, 255, 120)),
+                ("校准温 (TCal)", Color.FromArgb(200, 180, 100))
             };
-
-            var ledLabels = new List<Label>();
-            var ledValues = new List<Label>();
 
             for (int i = 0; i < 5; i++)
             {
-                int x = 15 + i * 248;
-
-                var lblTitle = new Label
+                // 通道名标签
+                var lblName = new Label
                 {
                     Text = channels[i].Item1,
-                    Font = new Font("Consolas", 10F, FontStyle.Bold),
+                    Font = new Font("Consolas", 9F, FontStyle.Bold),
                     ForeColor = Color.FromArgb(180, 180, 180),
-                    Location = new Point(x, 8),
-                    AutoSize = true
+                    Dock = DockStyle.Fill,
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Margin = new Padding(0)
                 };
+                table.Controls.Add(lblName, i, 0);
 
+                // 温度值标签（LED大字风格）
                 var lblValue = new Label
                 {
-                    Text = channels[i].Item2,
-                    Font = new Font("Consolas", 28F, FontStyle.Bold),
-                    ForeColor = channels[i].Item3,
+                    Text = "0.0 °C",
+                    Font = new Font("Consolas", 22F, FontStyle.Bold),
+                    ForeColor = channels[i].Item2,
                     BackColor = Color.FromArgb(10, 10, 10),
-                    Location = new Point(x, 32),
-                    Size = new Size(220, 48),
+                    Dock = DockStyle.Fill,
                     TextAlign = ContentAlignment.MiddleCenter,
-                    BorderStyle = BorderStyle.FixedSingle
+                    BorderStyle = BorderStyle.FixedSingle,
+                    Margin = new Padding(4, 0, 4, 4)
                 };
+                table.Controls.Add(lblValue, i, 1);
 
-                ledLabels.Add(lblTitle);
-                ledValues.Add(lblValue);
+                // 保存引用
+                switch (i)
+                {
+                    case 0: lblTF1Val = lblValue; break;
+                    case 1: lblTF2Val = lblValue; break;
+                    case 2: lblTSVal = lblValue; break;
+                    case 3: lblTCVal = lblValue; break;
+                    case 4: lblTCalVal = lblValue; break;
+                }
             }
 
-            pnlTempLeds.Controls.AddRange(ledLabels.ToArray());
-            pnlTempLeds.Controls.AddRange(ledValues.ToArray());
-
-            lblTF1 = ledLabels[0]; lblTF1Val = ledValues[0];
-            lblTF2 = ledLabels[1]; lblTF2Val = ledValues[1];
-            lblTS = ledLabels[2]; lblTSVal = ledValues[2];
-            lblTC = ledLabels[3]; lblTCVal = ledValues[3];
-            lblTCal = ledLabels[4]; lblTCalVal = ledValues[4];
+            pnl.Controls.Add(table);
+            return pnl;
         }
 
+        /// <summary>
+        /// 温度曲线图
+        /// </summary>
         private void BuildPlotView()
         {
             plotView = new PlotView
             {
-                Location = new Point(10, 110),
-                Size = new Size(900, 420),
                 BackColor = Color.FromArgb(20, 20, 20),
-                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
+                Margin = new Padding(4)
             };
         }
 
+        /// <summary>
+        /// 右侧面板：状态信息 + 操作按钮
+        /// </summary>
+        private Panel BuildRightPanel()
+        {
+            var pnlRight = new Panel
+            {
+                Width = 310,
+                BackColor = Color.FromArgb(35, 35, 35),
+                Padding = new Padding(6)
+            };
+
+            // --- 状态信息区（Dock=Top） ---
+            var pnlStatus = BuildStatusPanel();
+            pnlStatus.Dock = DockStyle.Top;
+            pnlRight.Controls.Add(pnlStatus);
+
+            // --- 操作按钮区（用固定高度 Panel，放在状态区下方） ---
+            var pnlButtons = BuildButtonsPanel();
+            pnlButtons.Dock = DockStyle.Top;
+            pnlRight.Controls.Add(pnlButtons);
+
+            return pnlRight;
+        }
+
+        /// <summary>
+        /// 状态信息面板
+        /// </summary>
         private Panel BuildStatusPanel()
         {
             var pnl = new Panel
             {
-                Location = new Point(920, 110),
-                Size = new Size(330, 300),
+                Height = 210,
                 BackColor = Color.FromArgb(40, 40, 40),
-                BorderStyle = BorderStyle.FixedSingle
+                Padding = new Padding(10, 8, 10, 8)
             };
 
             var lblTitle = new Label
             {
                 Text = "试验状态",
-                Font = new Font("Microsoft YaHei", 12F, FontStyle.Bold),
+                Font = new Font("Microsoft YaHei", 11F, FontStyle.Bold),
                 ForeColor = Color.White,
-                Location = new Point(15, 10),
-                AutoSize = true
+                Dock = DockStyle.Top,
+                Height = 28,
+                TextAlign = ContentAlignment.MiddleLeft
             };
 
-            // 状态信息
-            int y = 50;
-            lblStatusTitle = CreateInfoLabel("当前状态：", 15, y);
-            lblStatusValue = CreateInfoValue("空闲", 110, y, Color.FromArgb(100, 200, 100));
+            // 使用 TableLayoutPanel 布局状态行（避免文字堆叠）
+            var table = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 2,
+                RowCount = 4,
+                BackColor = Color.FromArgb(40, 40, 40),
+                Margin = new Padding(0),
+                Padding = new Padding(0, 6, 0, 0)
+            };
 
-            y += 35;
-            lblTimerTitle = CreateInfoLabel("记录计时：", 15, y);
-            lblTimerValue = CreateInfoValue("0 秒", 110, y, Color.White);
+            table.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 80));
+            table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
 
-            y += 35;
-            lblDriftTitle = CreateInfoLabel("温度漂移：", 15, y);
-            lblDriftValue = CreateInfoValue("-- °C/10min", 110, y, Color.FromArgb(200, 200, 200));
+            for (int i = 0; i < 4; i++)
+                table.RowStyles.Add(new RowStyle(SizeType.Absolute, 38));
 
-            y += 35;
-            lblProductTitle = CreateInfoLabel("样品编号：", 15, y);
-            lblProductValue = CreateInfoValue("--", 110, y, Color.FromArgb(200, 200, 200));
+            // 行0：当前状态
+            table.Controls.Add(CreateStatusLabel("当前状态："), 0, 0);
+            lblStatusValue = CreateStatusValue("空闲", Color.FromArgb(100, 200, 100));
+            table.Controls.Add(lblStatusValue, 1, 0);
 
-            pnl.Controls.AddRange(new Control[] {
-                lblTitle, lblStatusTitle, lblStatusValue,
-                lblTimerTitle, lblTimerValue,
-                lblDriftTitle, lblDriftValue,
-                lblProductTitle, lblProductValue
-            });
+            // 行1：记录计时
+            table.Controls.Add(CreateStatusLabel("记录计时："), 0, 1);
+            lblTimerValue = CreateStatusValue("0 秒", Color.White);
+            table.Controls.Add(lblTimerValue, 1, 1);
+
+            // 行2：温度漂移
+            table.Controls.Add(CreateStatusLabel("温度漂移："), 0, 2);
+            lblDriftValue = CreateStatusValue("-- °C/10min", Color.FromArgb(200, 200, 200));
+            table.Controls.Add(lblDriftValue, 1, 2);
+
+            // 行3：样品编号
+            table.Controls.Add(CreateStatusLabel("样品编号："), 0, 3);
+            lblProductValue = CreateStatusValue("--", Color.FromArgb(200, 200, 200));
+            table.Controls.Add(lblProductValue, 1, 3);
+
+            pnl.Controls.Add(table);
+            pnl.Controls.Add(lblTitle);
 
             return pnl;
         }
 
-        private Label CreateInfoLabel(string text, int x, int y)
+        private Label CreateStatusLabel(string text)
         {
             return new Label
             {
                 Text = text,
                 Font = new Font("Microsoft YaHei", 9F),
                 ForeColor = Color.FromArgb(160, 160, 160),
-                Location = new Point(x, y),
-                AutoSize = true
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Margin = new Padding(0)
             };
         }
 
-        private Label CreateInfoValue(string text, int x, int y, Color color)
+        private Label CreateStatusValue(string text, Color color)
         {
             return new Label
             {
                 Text = text,
                 Font = new Font("Microsoft YaHei", 10F, FontStyle.Bold),
                 ForeColor = color,
-                Location = new Point(x, y),
-                AutoSize = true
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Margin = new Padding(0)
             };
         }
 
-        private void BuildRightPanel()
+        /// <summary>
+        /// 操作按钮面板
+        /// </summary>
+        private Panel BuildButtonsPanel()
         {
-            pnlButtons = new Panel
+            var pnl = new Panel
             {
-                Location = new Point(920, 420),
-                Size = new Size(330, 110),
+                Height = 200,
                 BackColor = Color.FromArgb(40, 40, 40),
-                BorderStyle = BorderStyle.FixedSingle
+                Padding = new Padding(10, 8, 10, 8)
             };
 
-            var pnlBtnLabel = new Label
+            var lblTitle = new Label
             {
                 Text = "操作面板",
-                Font = new Font("Microsoft YaHei", 12F, FontStyle.Bold),
+                Font = new Font("Microsoft YaHei", 11F, FontStyle.Bold),
                 ForeColor = Color.White,
-                Location = new Point(15, 5),
-                AutoSize = true
+                Dock = DockStyle.Top,
+                Height = 28,
+                TextAlign = ContentAlignment.MiddleLeft
             };
 
-            // 第一行按钮
-            int btnWidth = 95, btnHeight = 32;
-            int startX = 15, startY = 35;
+            // 使用 FlowLayoutPanel 自动排列按钮，避免硬编码坐标
+            var flow = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = true,
+                BackColor = Color.FromArgb(40, 40, 40),
+                Padding = new Padding(0, 8, 0, 0),
+                Margin = new Padding(0)
+            };
 
-            btnNewTest = CreateButton("新建试验", startX, startY, btnWidth, btnHeight);
-            btnStartHeating = CreateButton("开始升温", startX + btnWidth + 5, startY, btnWidth, btnHeight);
-            btnStopHeating = CreateButton("停止升温", startX + (btnWidth + 5) * 2, startY, btnWidth, btnHeight);
+            int btnWidth = 88, btnHeight = 34;
 
-            // 第二行按钮
-            startY += btnHeight + 5;
-            btnStartRecording = CreateButton("开始记录", startX, startY, btnWidth, btnHeight);
-            btnStopRecording = CreateButton("停止记录", startX + btnWidth + 5, startY, btnWidth, btnHeight);
-            btnTestRecord = CreateButton("试验记录", startX + (btnWidth + 5) * 2, startY, btnWidth, btnHeight);
+            btnNewTest = CreateButton("新建试验", btnWidth, btnHeight);
+            btnStartHeating = CreateButton("开始升温", btnWidth, btnHeight);
+            btnStopHeating = CreateButton("停止升温", btnWidth, btnHeight);
+            btnStartRecording = CreateButton("开始记录", btnWidth, btnHeight);
+            btnStopRecording = CreateButton("停止记录", btnWidth, btnHeight);
+            btnTestRecord = CreateButton("试验记录", btnWidth, btnHeight);
+            btnParameterSettings = CreateButton("参数设置", btnWidth, btnHeight);
 
-            // 绑定点击事件 → 转发到核心层
+            // 绑定点击事件
             btnNewTest.Click += (s, e) => OnNewTest();
             btnStartHeating.Click += (s, e) => _coreService.StartHeating();
             btnStopHeating.Click += (s, e) => _coreService.StopHeating();
             btnStartRecording.Click += (s, e) => _coreService.StartRecording();
             btnStopRecording.Click += (s, e) => _coreService.StopRecording();
             btnTestRecord.Click += (s, e) => OnTestRecord();
+            btnParameterSettings.Click += (s, e) => OnParameterSettings();
 
-            pnlButtons.Controls.AddRange(new Control[] {
-                pnlBtnLabel, btnNewTest, btnStartHeating, btnStopHeating,
-                btnStartRecording, btnStopRecording, btnTestRecord
+            flow.Controls.AddRange(new Control[] {
+                btnNewTest, btnStartHeating, btnStopHeating,
+                btnStartRecording, btnStopRecording, btnTestRecord,
+                btnParameterSettings
             });
+
+            pnl.Controls.Add(flow);
+            pnl.Controls.Add(lblTitle);
+
+            return pnl;
         }
 
-        private Button CreateButton(string text, int x, int y, int width, int height)
+        private Button CreateButton(string text, int width, int height)
         {
             return new Button
             {
                 Text = text,
-                Location = new Point(x, y),
                 Size = new Size(width, height),
+                Margin = new Padding(3),
                 Font = new Font("Microsoft YaHei", 9F),
                 FlatStyle = FlatStyle.Flat,
                 BackColor = Color.FromArgb(60, 60, 60),
@@ -355,32 +443,43 @@ namespace BuildingFireTest.UI
             };
         }
 
-        private void BuildMessageLog()
+        /// <summary>
+        /// 底部系统消息日志面板
+        /// </summary>
+        private Panel BuildMessageLogPanel()
         {
+            var pnl = new Panel
+            {
+                Height = 180,
+                BackColor = Color.FromArgb(30, 30, 30),
+                Padding = new Padding(8, 4, 8, 8)
+            };
+
             var lblLogTitle = new Label
             {
                 Text = "系统消息",
                 Font = new Font("Microsoft YaHei", 10F, FontStyle.Bold),
                 ForeColor = Color.White,
-                Location = new Point(10, 545),
-                AutoSize = true,
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Left
+                Dock = DockStyle.Top,
+                Height = 22,
+                TextAlign = ContentAlignment.MiddleLeft
             };
 
             rtbMessageLog = new RichTextBox
             {
-                Location = new Point(10, 570),
-                Size = new Size(1240, 170),
+                Dock = DockStyle.Fill,
                 BackColor = Color.FromArgb(20, 20, 20),
                 ForeColor = Color.White,
                 Font = new Font("Consolas", 9F),
                 ReadOnly = true,
                 BorderStyle = BorderStyle.FixedSingle,
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
+                Margin = new Padding(0)
             };
 
-            tabMain.Controls.Add(lblLogTitle);
-            tabMain.Controls.Add(rtbMessageLog);
+            pnl.Controls.Add(rtbMessageLog);
+            pnl.Controls.Add(lblLogTitle);
+
+            return pnl;
         }
 
         #endregion
@@ -399,14 +498,6 @@ namespace BuildingFireTest.UI
                 Background = OxyColor.FromRgb(20, 20, 20)
             };
 
-            // 图例配置（注释掉避免编译错误）
-            /*
-            plotModel.Legend.Background = OxyColor.FromRgb(30, 30, 30);
-            plotModel.Legend.TextColor = OxyColor.FromRgb(200, 200, 200);
-            plotModel.Legend.Border = OxyColor.FromRgb(80, 80, 80);
-            plotModel.Legend.Position = OxyPlot.LegendPosition.RightTop;
-            */
-
             // X轴：时间（秒），滚动显示最近10分钟
             plotModel.Axes.Add(new LinearAxis
             {
@@ -417,7 +508,7 @@ namespace BuildingFireTest.UI
                 AxislineColor = OxyColor.FromRgb(100, 100, 100),
                 TicklineColor = OxyColor.FromRgb(100, 100, 100),
                 Minimum = 0,
-                Maximum = 600,  // 10分钟 = 600秒
+                Maximum = 600,
                 IsZoomEnabled = false,
                 IsPanEnabled = false
             });
@@ -502,19 +593,18 @@ namespace BuildingFireTest.UI
 
         private void SubscribeEvents()
         {
-            // 订阅B层DataBroadcast事件 → 后台线程触发，需Invoke
             _coreService.DataBroadcast += OnDataBroadcast!;
         }
 
         /// <summary>
         /// DataBroadcast事件回调（后台线程触发）
-        /// 通过Invoke安全地更新所有UI控件
+        /// 通过SafeInvoke安全地更新所有UI控件
         /// </summary>
         private void OnDataBroadcast(object sender, DataBroadcastEventArgs e)
         {
             this.SafeInvoke(() =>
             {
-                // 1. 更新温度LED面板（已处于UI线程，直接赋值）
+                // 1. 更新温度LED面板
                 UpdateTemperatureDisplay(e.Temperature);
 
                 // 2. 更新校准Tab的校准温显示
@@ -535,12 +625,12 @@ namespace BuildingFireTest.UI
                 _hasActiveTest = !string.IsNullOrEmpty(e.ProductId) && !string.IsNullOrEmpty(e.TestId);
                 ApplyButtonStates();
 
-                // 6. 追加系统消息（区分普通/黄色提示）
+                // 6. 追加系统消息
                 foreach (var msg in e.Messages)
                 {
                     var color = msg.IsWarning
-                        ? Color.FromArgb(255, 220, 80)   // 黄色提示
-                        : Color.FromArgb(220, 220, 220);  // 普通白色
+                        ? Color.FromArgb(255, 220, 80)
+                        : Color.FromArgb(220, 220, 220);
 
                     rtbMessageLog.SelectionStart = rtbMessageLog.TextLength;
                     rtbMessageLog.SelectionLength = 0;
@@ -582,13 +672,12 @@ namespace BuildingFireTest.UI
         {
             _dataPointIndex++;
 
-            // 添加数据点
             lineFurnace1.Points.Add(new DataPoint(_dataPointIndex, temp.TempFurnace1));
             lineFurnace2.Points.Add(new DataPoint(_dataPointIndex, temp.TempFurnace2));
             lineSurface.Points.Add(new DataPoint(_dataPointIndex, temp.TempSurface));
             lineCenter.Points.Add(new DataPoint(_dataPointIndex, temp.TempCenter));
 
-            // 滚动X轴：显示最近600个数据点（约10分钟 @ 1秒/点）
+            // 滚动X轴：显示最近600个数据点
             if (_dataPointIndex > 600)
             {
                 double minX = _dataPointIndex - 600;
@@ -596,7 +685,6 @@ namespace BuildingFireTest.UI
                 plotModel.Axes[0].Maximum = _dataPointIndex + 10;
             }
 
-            // 限制每条曲线最多保留3600个点（60分钟）
             const int maxPoints = 3600;
             TrimSeries(lineFurnace1, maxPoints);
             TrimSeries(lineFurnace2, maxPoints);
@@ -616,10 +704,6 @@ namespace BuildingFireTest.UI
 
         #region 按钮状态控制
 
-        /// <summary>
-        /// 五状态按钮权限控制
-        /// Idle/Preparing/Ready/Recording/Complete
-        /// </summary>
         private void ApplyButtonStates()
         {
             bool hasUnsaved = _coreService.HasUnsavedCompleteTest();
@@ -633,16 +717,17 @@ namespace BuildingFireTest.UI
                     btnStartRecording.Enabled = false;
                     btnStopRecording.Enabled = false;
                     btnTestRecord.Enabled = false;
+                    btnParameterSettings.Enabled = true;
                     break;
 
                 case TestState.Preparing:
-                    // 有活动试验时禁止新建；无活动试验或上次已保存则允许
                     btnNewTest.Enabled = !_hasActiveTest || !hasUnsaved;
                     btnStartHeating.Enabled = false;
                     btnStopHeating.Enabled = true;
                     btnStartRecording.Enabled = false;
                     btnStopRecording.Enabled = false;
                     btnTestRecord.Enabled = false;
+                    btnParameterSettings.Enabled = true;
                     break;
 
                 case TestState.Ready:
@@ -652,6 +737,7 @@ namespace BuildingFireTest.UI
                     btnStartRecording.Enabled = true;
                     btnStopRecording.Enabled = false;
                     btnTestRecord.Enabled = false;
+                    btnParameterSettings.Enabled = true;
                     break;
 
                 case TestState.Recording:
@@ -661,15 +747,17 @@ namespace BuildingFireTest.UI
                     btnStartRecording.Enabled = false;
                     btnStopRecording.Enabled = true;
                     btnTestRecord.Enabled = false;
+                    btnParameterSettings.Enabled = false;
                     break;
 
                 case TestState.Complete:
-                    btnNewTest.Enabled = !hasUnsaved;  // 未保存时禁止新建
+                    btnNewTest.Enabled = !hasUnsaved;
                     btnStartHeating.Enabled = false;
                     btnStopHeating.Enabled = true;
                     btnStartRecording.Enabled = false;
                     btnStopRecording.Enabled = false;
-                    btnTestRecord.Enabled = true;  // 允许保存试验记录
+                    btnTestRecord.Enabled = true;
+                    btnParameterSettings.Enabled = true;
                     break;
             }
         }
@@ -680,7 +768,6 @@ namespace BuildingFireTest.UI
 
         private void OnNewTest()
         {
-            // 检查是否有未保存的试验
             if (_coreService.HasUnsavedCompleteTest())
             {
                 MessageBox.Show("当前有未保存的试验记录，请先保存后再新建试验。",
@@ -719,13 +806,16 @@ namespace BuildingFireTest.UI
             }
         }
 
+        private void OnParameterSettings()
+        {
+            using var dialog = new ParameterSettingsDialog();
+            dialog.ShowDialog();
+        }
+
         #endregion
 
-        #region 导出功能（菜单/快捷键可触发）
+        #region 导出功能
 
-        /// <summary>
-        /// 导出Excel报告（供外部菜单/工具栏调用）
-        /// </summary>
         public void ExportExcel(string productId, string testId)
         {
             try
@@ -741,9 +831,6 @@ namespace BuildingFireTest.UI
             }
         }
 
-        /// <summary>
-        /// 导出PDF报告（供外部菜单/工具栏调用）
-        /// </summary>
         public void ExportPdf(string productId, string testId)
         {
             try
@@ -763,7 +850,6 @@ namespace BuildingFireTest.UI
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            // 如果正在记录中，提示用户
             if (_currentState == TestState.Recording)
             {
                 var result = MessageBox.Show(
@@ -775,7 +861,6 @@ namespace BuildingFireTest.UI
                 }
             }
 
-            // 取消事件订阅
             _coreService.DataBroadcast -= OnDataBroadcast;
         }
     }
