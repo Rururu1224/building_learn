@@ -1,0 +1,19 @@
+# 后端 C#/.NET
+obj/
+bin/
+*.cache
+*.suo
+*.user
+.vs/
+*.log
+
+# 前端 Vue/JS
+node_modules/
+dist/
+npm-debug.log
+yarn-error.log
+.vscode/
+
+# 系统文件
+.DS_Store
+Thumbs.db
