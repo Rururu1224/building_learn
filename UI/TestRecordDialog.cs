@@ -90,7 +90,7 @@ namespace BuildingFireTest.UI
             lblFlameStart = new Label
             {
                 Text = "火焰发生时刻 (秒)：",
-                ForeColor = Color.FromArgb(180, 180, 180),
+                ForeColor = Color.White,
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleRight,
                 Enabled = false,
@@ -116,7 +116,7 @@ namespace BuildingFireTest.UI
             lblFlameDuration = new Label
             {
                 Text = "火焰持续时间 (秒)：",
-                ForeColor = Color.FromArgb(180, 180, 180),
+                ForeColor = Color.White,
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleRight,
                 Enabled = false,
@@ -157,25 +157,38 @@ namespace BuildingFireTest.UI
 
             // ===== 试验后质量 =====
             var pnlPostWeight = new Panel { Dock = DockStyle.Fill, Margin = new Padding(0) };
+
+            // 标签行：试验后质量 + *必填（红色）
+            var flowPostWeight = new FlowLayoutPanel
+            {
+                FlowDirection = FlowDirection.RightToLeft,
+                WrapContents = false,
+                AutoSize = true,
+                Dock = DockStyle.Fill,
+                Margin = new Padding(0)
+            };
+
+            var lblRequired = new Label
+            {
+                Text = "*必填",
+                ForeColor = Color.FromArgb(255, 100, 100),
+                Font = new Font("Microsoft YaHei", 9F),
+                AutoSize = true,
+                Margin = new Padding(0, 8, 4, 0)
+            };
+
             var lblPostWeight = new Label
             {
                 Text = "试验后质量 (g)：",
                 ForeColor = Color.FromArgb(200, 200, 200),
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleRight,
-                Margin = new Padding(0, 6, 8, 0)
+                Margin = new Padding(0, 6, 0, 0)
             };
-            pnlPostWeight.Controls.Add(lblPostWeight);
-            var lblRequired = new Label
-            {
-                Text = "*必填",
-                ForeColor = Color.FromArgb(255, 100, 100),
-                Font = new Font("Microsoft YaHei", 7F),
-                Dock = DockStyle.Bottom,
-                Height = 14,
-                Margin = new Padding(0, 0, 0, 2)
-            };
-            pnlPostWeight.Controls.Add(lblRequired);
+
+            flowPostWeight.Controls.Add(lblRequired);
+            flowPostWeight.Controls.Add(lblPostWeight);
+            pnlPostWeight.Controls.Add(flowPostWeight);
             mainTable.Controls.Add(pnlPostWeight, 0, row);
 
             txtPostWeight = new TextBox
