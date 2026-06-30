@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "MU35EtGV/XU=",
+  "dgSpecHash": "keSBBxoEXxw=",
   "success": true,
-  "projectFilePath": "D:\\AAAlyk\\experiment\\building_learn\\BuildingLearn\\BuildingLearn.csproj",
+  "projectFilePath": "d:\\AAAlyk\\experiment\\building_learn\\BuildingLearn\\BuildingLearn.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\lyk\\.nuget\\packages\\epplus\\7.5.0\\epplus.7.5.0.nupkg.sha512",
     "C:\\Users\\lyk\\.nuget\\packages\\epplus.interfaces\\7.5.0\\epplus.interfaces.7.5.0.nupkg.sha512",

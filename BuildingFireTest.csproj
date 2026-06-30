@@ -9,6 +9,7 @@
     <RootNamespace>BuildingFireTest</RootNamespace>
     <AssemblyName>BuildingFireTest</AssemblyName>
     <StartupObject>BuildingFireTest.Program</StartupObject>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <ItemGroup>

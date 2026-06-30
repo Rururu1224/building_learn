@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\AAAlyk\\experiment\\building_learn\\BuildingLearn\\BuildingLearn.csproj": {}
+    "d:\\AAAlyk\\experiment\\building_learn\\BuildingLearn\\BuildingLearn.csproj": {}
   },
   "projects": {
-    "D:\\AAAlyk\\experiment\\building_learn\\BuildingLearn\\BuildingLearn.csproj": {
+    "d:\\AAAlyk\\experiment\\building_learn\\BuildingLearn\\BuildingLearn.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\AAAlyk\\experiment\\building_learn\\BuildingLearn\\BuildingLearn.csproj",
+        "projectUniqueName": "d:\\AAAlyk\\experiment\\building_learn\\BuildingLearn\\BuildingLearn.csproj",
         "projectName": "BuildingLearn",
-        "projectPath": "D:\\AAAlyk\\experiment\\building_learn\\BuildingLearn\\BuildingLearn.csproj",
+        "projectPath": "d:\\AAAlyk\\experiment\\building_learn\\BuildingLearn\\BuildingLearn.csproj",
         "packagesPath": "C:\\Users\\lyk\\.nuget\\packages\\",
-        "outputPath": "D:\\AAAlyk\\experiment\\building_learn\\BuildingLearn\\obj\\",
+        "outputPath": "d:\\AAAlyk\\experiment\\building_learn\\BuildingLearn\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
