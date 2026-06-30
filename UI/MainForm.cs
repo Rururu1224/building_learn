@@ -64,10 +64,12 @@ namespace BuildingFireTest.UI
         private TabPage tabMain;
         private TabPage tabCalibration;
         private TabPage tabRecordQuery;
+        private TabPage tabComparison;
 
         // ========== 子Tab控件 ==========
         private CalibrationTab _calibrationTab;
         private RecordQueryTab _recordQueryTab;
+        private ComparisonTab _comparisonTab;
 
         // ========== 当前状态 ==========
         private TestState _currentState = TestState.Idle;
@@ -82,6 +84,7 @@ namespace BuildingFireTest.UI
             InitializeOxyPlot();
             InitializeCalibrationTab();
             InitializeRecordQueryTab();
+            InitializeComparisonTab();
             SubscribeEvents();
             ApplyButtonStates();
         }
@@ -107,11 +110,13 @@ namespace BuildingFireTest.UI
             tabMain = new TabPage("试验控制");
             tabCalibration = new TabPage("设备校准");
             tabRecordQuery = new TabPage("记录查询");
+            tabComparison = new TabPage("对比分析");
             tabMain.BackColor = Color.FromArgb(30, 30, 30);
             tabCalibration.BackColor = Color.FromArgb(30, 30, 30);
             tabRecordQuery.BackColor = Color.FromArgb(30, 30, 30);
+            tabComparison.BackColor = Color.FromArgb(30, 30, 30);
 
-            tabControl.TabPages.AddRange(new[] { tabMain, tabCalibration, tabRecordQuery });
+            tabControl.TabPages.AddRange(new[] { tabMain, tabCalibration, tabRecordQuery, tabComparison });
 
             // ========== 主Tab页面布局（使用Dock停靠） ==========
             BuildMainTabPage();
@@ -585,6 +590,13 @@ namespace BuildingFireTest.UI
             _recordQueryTab = new RecordQueryTab(_dataService);
             _recordQueryTab.Dock = DockStyle.Fill;
             tabRecordQuery.Controls.Add(_recordQueryTab);
+        }
+
+        private void InitializeComparisonTab()
+        {
+            _comparisonTab = new ComparisonTab(_dataService);
+            _comparisonTab.Dock = DockStyle.Fill;
+            tabComparison.Controls.Add(_comparisonTab);
         }
 
         #endregion
