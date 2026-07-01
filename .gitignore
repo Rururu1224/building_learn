@@ -16,4 +16,5 @@ yarn-error.log
 
 # 系统文件
 .DS_Store
-Thumbs.db*.db
+Thumbs.db
+*.db

@@ -64,11 +64,7 @@ namespace BuildingFireTest.UI
         private TabPage tabMain;
         private TabPage tabCalibration;
         private TabPage tabRecordQuery;
-
-        // ========== 子Tab控件 ==========
-        private CalibrationTab _calibrationTab;
-        private RecordQueryTab _recordQueryTab;
-
+        private ComparisonTab _comparisonTab;
         // ========== 当前状态 ==========
         private TestState _currentState = TestState.Idle;
         private bool _hasActiveTest;
@@ -82,37 +78,13 @@ namespace BuildingFireTest.UI
             InitializeOxyPlot();
             InitializeCalibrationTab();
             InitializeRecordQueryTab();
-            SubscribeEvents();
-            ApplyButtonStates();
-        }
-
-        private void InitializeComponent()
-        {
-            // ========== 窗体设置 ==========
-            this.Text = "ISO 11820 建筑材料不燃性试验系统";
-            this.Size = new Size(1280, 820);
-            this.StartPosition = FormStartPosition.CenterScreen;
-            this.MinimumSize = new Size(1024, 700);
-            this.BackColor = Color.FromArgb(30, 30, 30);
-            this.Font = new Font("Microsoft YaHei", 9F);
-            this.AutoScaleMode = AutoScaleMode.Font;
-
-            // ========== TabControl ==========
-            tabControl = new TabControl
-            {
-                Dock = DockStyle.Fill,
-                Font = new Font("Microsoft YaHei", 10F)
-            };
-
-            tabMain = new TabPage("试验控制");
-            tabCalibration = new TabPage("设备校准");
-            tabRecordQuery = new TabPage("记录查询");
+            tabComparison = new TabPage("对比分析");
             tabMain.BackColor = Color.FromArgb(30, 30, 30);
             tabCalibration.BackColor = Color.FromArgb(30, 30, 30);
             tabRecordQuery.BackColor = Color.FromArgb(30, 30, 30);
+            tabComparison.BackColor = Color.FromArgb(30, 30, 30);
 
-            tabControl.TabPages.AddRange(new[] { tabMain, tabCalibration, tabRecordQuery });
-
+            tabControl.TabPages.AddRange(new[] { tabMain, tabCalibration, tabRecordQuery, tabComparison });
             // ========== 主Tab页面布局（使用Dock停靠） ==========
             BuildMainTabPage();
 
@@ -585,6 +557,13 @@ namespace BuildingFireTest.UI
             _recordQueryTab = new RecordQueryTab(_dataService);
             _recordQueryTab.Dock = DockStyle.Fill;
             tabRecordQuery.Controls.Add(_recordQueryTab);
+        }
+
+        private void InitializeComparisonTab()
+        {
+            _comparisonTab = new ComparisonTab(_dataService);
+            _comparisonTab.Dock = DockStyle.Fill;
+            tabComparison.Controls.Add(_comparisonTab);
         }
 
         #endregion
