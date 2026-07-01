@@ -29,8 +29,8 @@ namespace BuildingFireTest.Adapters
         {
             var records = _app.Db.QueryTestMasters(
                 productId: productId,
-                startDate: startDate?.ToString("yyyy-MM-dd"),
-                endDate: endDate?.ToString("yyyy-MM-dd"),
+                startDate: startDate?.ToString("yyyy-MM-dd 00:00:00"),
+                endDate: endDate?.ToString("yyyy-MM-dd HH:mm:ss"),
                 operatorName: operatorName);
 
             var dt = new DataTable();

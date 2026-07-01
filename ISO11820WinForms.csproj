@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+  </PropertyGroup>
+
+  <!-- 排除 BuildingLearn 子项目（它有自己的 .csproj，由联调时作为项目引用） -->
+  <ItemGroup>
+    <Compile Remove="BuildingLearn\**" />
+    <EmbeddedResource Remove="BuildingLearn\**" />
+    <None Remove="BuildingLearn\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.9" />
+    <PackageReference Include="OxyPlot.WindowsForms" Version="2.*" />
+    <PackageReference Include="EPPlus" Version="8.6.1" />
+    <PackageReference Include="PDFsharp-MigraDoc" Version="6.*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.9" />
+    <PackageReference Include="Serilog" Version="4.*" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageReference Include="MathNet.Numerics" Version="5.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="DB\InitDatabase.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <!-- 联调时引用 BuildingLearn 后端项目 -->
+  <ItemGroup>
+    <ProjectReference Include="BuildingLearn\BuildingLearn.csproj" />
+  </ItemGroup>
+
+</Project>

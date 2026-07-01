@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet restore *)",
+      "Bash(dotnet clean *)",
+      "Bash(dotnet build *)",
+      "Bash(diff DB/DbHelper.cs BuildingLearn/Data/DbHelper.cs)",
+      "Bash(echo \"Exit: $?\")",
+      "Bash(dotnet run *)",
+      "Bash(Copy-Item ../DB/* Data/ -Force)",
+      "Bash(cp -f ../DB/*.cs ../DB/*.sql Data/)",
+      "Bash(ls Data/*.cs Data/*.sql)"
+    ]
+  }
+}

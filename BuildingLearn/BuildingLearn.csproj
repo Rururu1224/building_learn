@@ -16,7 +16,7 @@
     <PackageReference Include="OxyPlot.WindowsForms" Version="2.2.0" />
     <PackageReference Include="PDFsharp-MigraDoc" Version="6.1.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
-    <PackageReference Include="EPPlus" Version="7.5.0" />
+    <PackageReference Include="EPPlus" Version="8.6.1" />
   </ItemGroup>
 
   <ItemGroup>

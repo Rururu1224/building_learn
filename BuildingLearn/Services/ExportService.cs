@@ -23,8 +23,8 @@ public class ExportService
     {
         _config = config;
         _db = db;
-        // 设置 EPPlus 许可证上下文
-        ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+        // 设置 EPPlus 许可证（v8+ 使用 License 属性）
+        ExcelPackage.License.SetNonCommercialPersonal("Learning Project");
     }
 
     /// <summary>
